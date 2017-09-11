@@ -9,6 +9,10 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		ocv_debug|x64 = ocv_debug|x64
+		ocv_debug|x86 = ocv_debug|x86
+		ocv_release|x64 = ocv_release|x64
+		ocv_release|x86 = ocv_release|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +21,14 @@ Global
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Debug|x64.Build.0 = Debug|x64
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Debug|x86.ActiveCfg = Debug|Win32
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Debug|x86.Build.0 = Debug|Win32
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_debug|x64.ActiveCfg = opencv_debug|x64
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_debug|x64.Build.0 = opencv_debug|x64
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_debug|x86.ActiveCfg = opencv_debug|Win32
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_debug|x86.Build.0 = opencv_debug|Win32
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_release|x64.ActiveCfg = opencv_release|x64
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_release|x64.Build.0 = opencv_release|x64
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_release|x86.ActiveCfg = opencv_release|Win32
+		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.ocv_release|x86.Build.0 = opencv_release|Win32
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Release|x64.ActiveCfg = Release|x64
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Release|x64.Build.0 = Release|x64
 		{7D0923C5-7F17-4965-A8E0-5A91A8AD4567}.Release|x86.ActiveCfg = Release|Win32
