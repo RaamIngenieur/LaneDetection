@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include "opencv2\opencv.hpp"
+#include "opencv2\core\cuda.hpp"
+
 #include <iostream>
 
 using namespace std;
@@ -64,6 +66,7 @@ int main() {
 		bwFHalf = Mat(bwFrame, cv::Rect(0, bwhHeight, bwhWidth, bwhHeight));
 		//flip(bwFHalf, bwFFHalf, 1);
 
+		cv::cuda::warpPerspective(InputArray src, OutputArray dst, InputArray M, Size dsize, int flags = INTER_LINEAR, int borderMode = BORDER_CONSTANT, Scalar borderValue = Scalar(), Stream &stream = Stream::Null());
 		warpPerspective(bwFHalf, topView, lambda, Size(1001, 1000), INTER_LINEAR, BORDER_CONSTANT,Scalar(127));
 
 		//flip(topViewFF, topView, 1);
