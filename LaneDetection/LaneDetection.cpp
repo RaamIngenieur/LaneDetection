@@ -10,6 +10,7 @@
 #include "opencv2/cudaarithm.hpp"
 #include "opencv2/cudafilters.hpp"
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio/videoio.hpp>
 
 #include <iostream>
 
@@ -19,7 +20,7 @@ using namespace cv;
 int main() {
 
 	cuda::GpuMat GFHalf, topViewG,blurredG,sharpenedG,threshG, smallLaneG, largeLaneG, thinLinesSG, thinLinesSGT, thinLinesLG, thinLinesLGT, thinLinesG, bwTopViewG, thinLinesGU,linesG,newTopViewG, resultViewG;
-	Mat frame, FHalf, lambda,opFrame,smallLane,largeLane,topView;
+	Mat frame, FHalf, lambda,opFrame,smallLane,largeLane,topView,thinLines,thinLines2;
 
 	vector<Vec4i> lines;
 
@@ -55,7 +56,7 @@ int main() {
 	gaussBlur = cuda::createGaussianFilter(sharpenedG.type(), blurredG.type(), Size(0,0), 1, 1, BORDER_REPLICATE);
 
 	//Read filter templates
-	smallLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateSmall1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	smallLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateSmall3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	largeLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateSmall3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
 	//Load templates to GPU
@@ -65,7 +66,7 @@ int main() {
 	// Create a VideoCapture object and open the input file
 	// If the input is the web camera, pass 0 instead of the video file name
 
-	const string source = "C:/Users/Raam/OneDrive/R8/Moovita/Videos/full_20170821-17-49-53.avi";
+	const string source = "C:/Users/Raam/OneDrive/R8/Moovita/Videos/full_20170821-17-47-35.avi";
 	VideoCapture cap(source);
 
 	// Check if camera opened successfully
@@ -78,7 +79,7 @@ int main() {
 	cap >> frame;
 
 	VideoWriter outputVideo;                                      // Open the output
-	//int ex = static_cast<int>(cap.get(CV_CAP_PROP_FOURCC));
+	int ex = static_cast<int>(cap.get(CV_CAP_PROP_FOURCC));
 
 	string::size_type pAt = source.find_last_of('.');
 
@@ -88,7 +89,7 @@ int main() {
 	hHeight =frame.size().height / 2;
 	hWidth = frame.size().width;
 
-	outputVideo.open(NAME, -1, 20, Size(hWidth,hHeight), true);
+	outputVideo.open(NAME, ex, 20, Size(hWidth,hHeight), true);
 
 	if (!outputVideo.isOpened())
 	{
@@ -135,11 +136,12 @@ int main() {
 
 		//Thin lines
 		NCCR->match(threshG, smallLaneG, thinLinesSG, cuda::Stream::Null());
-		cuda::threshold(thinLinesSG, thinLinesSGT, 0.35, 255, THRESH_BINARY, cuda::Stream::Null());
+		cuda::threshold(thinLinesSG, thinLinesSGT, 0.4, 255, THRESH_BINARY, cuda::Stream::Null());
 		cuda::copyMakeBorder(thinLinesSGT, thinLinesSGT, 10, 10, 10, 10, BORDER_CONSTANT, 0);
 
-		//thinLinesSG.convertTo(thinLinesGU, CV_8UC1);
+		thinLinesSGT.convertTo(thinLinesGU, CV_8UC1);
 
+		/*
 		NCCR->match(threshG, largeLaneG, thinLinesLG, cuda::Stream::Null());
 		cuda::threshold(thinLinesLG, thinLinesLGT, 0.4, 255, THRESH_BINARY, cuda::Stream::Null());
 
@@ -147,9 +149,11 @@ int main() {
 
 		cuda::addWeighted(thinLinesSGT, 1, thinLinesLGT, 1, 0, thinLinesG);
 
+
 		//Hough
 
 		thinLinesG.convertTo(thinLinesGU, CV_8UC1);
+		*/
 
 		
 		hough->detect(thinLinesGU, linesG);
@@ -176,6 +180,10 @@ int main() {
 
 		resultViewG.download(opFrame);
 
+		//cvtColor(thinLines, thinLines2, CV_GRAY2RGB);
+
+		//vconcat(FHalf, thinLines2, opFrame);
+
 		// Display the resulting frame
 		//imshow("Frame", opFrame);
 
@@ -190,9 +198,10 @@ int main() {
 
 	// When everything done, release the video capture object
 	cap.release();
+	outputVideo.release();
 
 	// Closes all the frames
-	destroyAllWindows();
+	cv::destroyAllWindows();
 
 	return 0;
 }
