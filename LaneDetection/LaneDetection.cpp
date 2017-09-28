@@ -28,7 +28,7 @@ int main() {
 	int hWidth,hHeight;
 	Ptr<cuda::Filter> gaussSharp,gaussBlur;
 	Ptr<cuda::TemplateMatching> NCCR = cuda::createTemplateMatching(threshG.type(), CV_TM_CCORR_NORMED, Size(0,0));
-	Ptr<cuda::HoughSegmentDetector> hough = cuda::createHoughSegmentDetector(1, CV_PI/180, 60, 5, 300);
+	Ptr<cuda::HoughSegmentDetector> hough = cuda::createHoughSegmentDetector(1, CV_PI/180, 70, 10, 500);
 
 
 	// Input Quadilateral or Image plane coordinates
@@ -56,8 +56,8 @@ int main() {
 	gaussBlur = cuda::createGaussianFilter(sharpenedG.type(), blurredG.type(), Size(0,0), 1, 1, BORDER_REPLICATE);
 
 	//Read filter templates
-	smallLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateSmall3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	largeLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateSmall3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	smallLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateLine2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	largeLane = imread("C:/Users/Raam/OneDrive/R8/Moovita/Videos/laneTemplateDot2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
 	//Load templates to GPU
 	smallLaneG.upload(smallLane);
@@ -121,39 +121,48 @@ int main() {
 		//Sharpen
 		gaussSharp->apply(bwTopViewG, blurredG);
 		cv::cuda::addWeighted(bwTopViewG, 2.0, blurredG, -1.0, 0, sharpenedG);
-		gaussSharp->apply(sharpenedG, blurredG);
-		cv::cuda::addWeighted(sharpenedG, 2.0, blurredG, -1.0, 0, sharpenedG);
-		gaussSharp->apply(sharpenedG, blurredG);
-		cv::cuda::addWeighted(sharpenedG, 2.0, blurredG, -1.0, 0, sharpenedG);
+		//gaussSharp->apply(sharpenedG, blurredG);
+		//cv::cuda::addWeighted(sharpenedG, 2.0, blurredG, -1.0, 0, sharpenedG);
+		//gaussSharp->apply(sharpenedG, blurredG);
+		//cv::cuda::addWeighted(sharpenedG, 2.0, blurredG, -1.0, 0, sharpenedG);
 
 		//Blur
 		gaussBlur->apply(sharpenedG, blurredG);
-		gaussBlur->apply(blurredG, sharpenedG);
-		gaussBlur->apply(sharpenedG, blurredG);
+		//gaussBlur->apply(blurredG, sharpenedG);
+		//gaussBlur->apply(sharpenedG, blurredG);
 
 		//threshold
 		cuda::threshold(blurredG, threshG, 200, 255, THRESH_BINARY, cuda::Stream::Null());
 
 		//Thin lines
 		NCCR->match(threshG, smallLaneG, thinLinesSG, cuda::Stream::Null());
-		cuda::threshold(thinLinesSG, thinLinesSGT, 0.4, 255, THRESH_BINARY, cuda::Stream::Null());
-		cuda::copyMakeBorder(thinLinesSGT, thinLinesSGT, 10, 10, 10, 10, BORDER_CONSTANT, 0);
+		thinLinesSG.download(thinLines);
+		inRange(thinLines, 0.55, 1, thinLines2);
+		thinLinesSGT.upload(thinLines2);
+		//cuda::threshold(thinLinesSG, thinLinesSGT, 0.45, 255, THRESH_BINARY, cuda::Stream::Null());
+		cuda::copyMakeBorder(thinLinesSGT, thinLinesSGT, 15, 15, 15, 15, BORDER_CONSTANT, 0);
 
 		thinLinesSGT.convertTo(thinLinesGU, CV_8UC1);
 
-		/*
-		NCCR->match(threshG, largeLaneG, thinLinesLG, cuda::Stream::Null());
-		cuda::threshold(thinLinesLG, thinLinesLGT, 0.4, 255, THRESH_BINARY, cuda::Stream::Null());
+		
+		NCCR->match(thinLinesGU, largeLaneG, thinLinesLG, cuda::Stream::Null());
+		thinLinesLG.download(thinLines);
+		inRange(thinLines, 0.3, 0.6, thinLines2);
+		thinLinesLGT.upload(thinLines2);
+		//cuda::threshold(thinLinesLG, thinLinesLGT, 0., 255, THRESH_BINARY, cuda::Stream::Null());
+		cuda::copyMakeBorder(thinLinesLGT, thinLinesLGT, 15, 15, 15, 15, BORDER_CONSTANT, 0);
 
-		cuda::copyMakeBorder(thinLinesLGT, thinLinesLGT, 10, 10, 10, 10, BORDER_CONSTANT, 0);
+		//cuda::addWeighted(thinLinesSGT, 1, thinLinesLGT, 1, 0, thinLinesG);
 
-		cuda::addWeighted(thinLinesSGT, 1, thinLinesLGT, 1, 0, thinLinesG);
+		thinLinesLGT.convertTo(thinLinesGU, CV_8UC1);
+
+		//gaussBlur->apply(thinLinesGU, blurredG);
+		//cuda::threshold(blurredG, thinLinesGU, 200, 255, THRESH_BINARY, cuda::Stream::Null());
 
 
 		//Hough
 
-		thinLinesG.convertTo(thinLinesGU, CV_8UC1);
-		*/
+		//thinLinesG.convertTo(thinLinesGU, CV_8UC1);
 
 		
 		hough->detect(thinLinesGU, linesG);
